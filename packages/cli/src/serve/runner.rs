@@ -335,6 +335,8 @@ impl AppRunner {
         }
     }
 
+    pub fn fill_from_target_dir(&mut self) {}
+
     fn flush_session_cache(&self) {
         let cache_dir = self.krate.session_cache_dir();
         _ = std::fs::remove_dir_all(&cache_dir);

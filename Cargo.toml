@@ -65,6 +65,7 @@ members = [
     "packages/const-serialize-macro",
     "packages/dx-wire-format",
     "packages/logger",
+    "packages/depinfo",
 
     # Playwright tests
     "packages/playwright-tests/liveview",
@@ -150,6 +151,7 @@ manganis = { path = "packages/manganis/manganis", version = "0.6.2" }
 manganis-core = { path = "packages/manganis/manganis-core", version = "0.6.2" }
 manganis-macro = { path = "packages/manganis/manganis-macro", version = "0.6.2" }
 
+depinfo = { path = "packages/depinfo", version = "0.6.2" }
 warnings = { version = "0.2.1" }
 
 # a fork of pretty please for tests - let's get off of this if we can!

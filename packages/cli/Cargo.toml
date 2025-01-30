@@ -24,6 +24,8 @@ dioxus-cli-opt = { workspace = true }
 dioxus-fullstack = { workspace = true }
 dioxus-dx-wire-format = { workspace = true }
 
+depinfo = { workspace = true }
+
 clap = { workspace = true, features = ["derive", "cargo"] }
 convert_case = { workspace = true }
 thiserror = { workspace = true }

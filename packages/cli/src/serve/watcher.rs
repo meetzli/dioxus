@@ -1,6 +1,8 @@
 use super::detect::is_wsl;
 use super::update::ServeUpdate;
-use crate::{cli::serve::ServeArgs, dioxus_crate::DioxusCrate};
+use crate::Result;
+use crate::{cli::serve::ServeArgs, dioxus_crate::DioxusCrate, BuildUpdate};
+use dioxus_dx_wire_format::BuildStage;
 use futures_channel::mpsc::{UnboundedReceiver, UnboundedSender};
 use futures_util::StreamExt;
 use notify::{
@@ -78,6 +80,17 @@ impl Watcher {
         tracing::debug!("Files changed: {files:?}");
 
         ServeUpdate::FilesChanged { files }
+    }
+
+    pub(crate) fn new_build_update(&mut self, update: &BuildUpdate) -> Result<()> {
+        let BuildUpdate::Progress {
+            stage: BuildStage::BinaryCreated { binary, is_sever },
+        } = update
+        else {
+            return Ok(());
+        };
+
+        Ok(())
     }
 
     fn watch_filesystem(&mut self) {

@@ -150,6 +150,9 @@ pub(crate) async fn serve_all(mut args: ServeArgs) -> Result<()> {
                 // And then update the websocketed clients with the new build status in case they want it
                 devserver.new_build_update(&update, &builder).await;
 
+                // And then update the watcher with the new build status in case there are new files to watch
+                _ = watcher.new_build_update(&update);
+
                 // And then open the app if it's ready
                 // todo: there might be more things to do here that require coordination with other pieces of the CLI
                 // todo: maybe we want to shuffle the runner around to send an "open" command instead of doing that

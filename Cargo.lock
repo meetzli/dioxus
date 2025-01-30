@@ -3268,6 +3268,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "depinfo"
+version = "0.6.2"
+dependencies = [
+ "thiserror 1.0.69",
+]
+
+[[package]]
 name = "der"
 version = "0.6.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3483,6 +3490,7 @@ dependencies = [
  "convert_case 0.6.0",
  "crossterm",
  "ctrlc",
+ "depinfo",
  "dioxus-autofmt",
  "dioxus-check",
  "dioxus-cli-config",

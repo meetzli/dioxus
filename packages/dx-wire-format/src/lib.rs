@@ -63,6 +63,10 @@ pub enum BuildStage {
         total: usize,
         path: PathBuf,
     },
+    BinaryCreated {
+        binary: PathBuf,
+        is_sever: bool,
+    },
     Bundling,
     RunningGradle,
     Success,
