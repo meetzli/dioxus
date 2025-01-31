@@ -87,9 +87,10 @@ pub use crate::innerlude::{
     VPlaceholder, VText, VirtualDom, WriteMutations,
 };
 
-/// The purpose of this module is to alleviate imports of many common types
+/// The purpose of this module is to alleviate imports of many common types.
 ///
 /// This includes types like [`Element`], and [`Component`].
+/// It is required to import when using the dioxus macro.
 pub mod prelude {
     pub use crate::innerlude::{
         consume_context, consume_context_from_scope, current_owner, current_scope_id,
