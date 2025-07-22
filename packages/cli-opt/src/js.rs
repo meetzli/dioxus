@@ -48,8 +48,33 @@ impl Emitter for TracingEmitter {
 
 /// Run a closure with the swc globals and handler set up
 fn inside_handler<O>(f: impl FnOnce(&Globals, Lrc<SourceMap>) -> O) -> O {
+    use swc_common::source_map::{FileLoader, RealFileLoader};
+    // struct MySouceMapLoader;
+    // impl FileLoader for MySouceMapLoader {
+    //     fn file_exists(&self, path: &Path) -> bool {
+    //         tracing::info!("!!! Checking if file exists: {:?}", path);
+    //         RealFileLoader.file_exists(path)
+    //     }
+
+    //     fn abs_path(&self, path: &Path) -> Option<PathBuf> {
+    //         tracing::info!("!! Getting absolute path for: {:?}", path);
+    //         RealFileLoader.abs_path(path)
+    //     }
+
+    //     fn read_file(&self, path: &Path) -> std::io::Result<bytes_str::BytesStr> {
+    //         if !path.exists() {
+    //             return RealFileLoader.read_file(&PathBuf::from("/Users/jonathankelley/Development/Tinkering/bundling-js-wasm-err/assets/bindings.js"));
+    //         }
+
+    //         tracing::info!("!!! Reading file in file loader: {:?}", path);
+    //         RealFileLoader.read_file(path)
+    //     }
+    // }
+
     let globals = Globals::new();
-    let cm = Lrc::new(SourceMap::new(FilePathMapping::empty()));
+    let mut fm = FilePathMapping::new(vec![]);
+    let sm = SourceMap::with_file_loader(Box::new(RealFileLoader) as _, fm);
+    let cm = Lrc::new(sm);
     let handler = Handler::with_emitter_and_flags(Box::new(TracingEmitter), Default::default());
     GLOBALS.set(&globals, || HANDLER.set(&handler, || f(&globals, cm)))
 }
@@ -72,6 +97,7 @@ fn resolve_js_inside_handler(
     cm: &Lrc<SourceMap>,
 ) -> anyhow::Result<Module> {
     if bundle {
+        tracing::info!("Bundling JS file: {:?}", file);
         let node_resolver = NodeModulesResolver::new(TargetEnv::Browser, Default::default(), true);
         let mut bundler = Bundler::new(
             globals,
@@ -84,12 +110,14 @@ fn resolve_js_inside_handler(
             },
             Box::new(Hook),
         );
+
         let mut entries = HashMap::default();
         entries.insert("main".to_string(), FileName::Real(file));
 
         let mut bundles = bundler
             .bundle(entries)
             .context("failed to bundle javascript with swc")?;
+
         // Since we only inserted one entry, there should only be one bundle in the output
         let bundle = bundles
             .pop()
@@ -167,6 +195,8 @@ struct PathLoader {
 
 impl Load for PathLoader {
     fn load(&self, file: &FileName) -> anyhow::Result<ModuleData> {
+        tracing::info!("Loading JS file: {:?}", file);
+
         let file = match file {
             FileName::Real(v) => v,
             _ => anyhow::bail!("Only real files are supported"),
@@ -247,7 +277,9 @@ pub(crate) fn process_js(
     let mut writer = std::io::BufWriter::new(std::fs::File::create(output_path)?);
     if js_options.minified() {
         if let Err(err) = bundle_js_to_writer(source.to_path_buf(), bundle, true, &mut writer) {
-            tracing::error!("Failed to minify js. Falling back to non-minified: {err}");
+            tracing::error!(
+                "Failed to minify (bundle) js at {source:?} to {output_path:?}. Falling back to non-minified: {err}"
+            );
         } else {
             return Ok(());
         }
@@ -284,7 +316,9 @@ pub(crate) fn hash_js(
 ) -> anyhow::Result<()> {
     if js_options.minified() {
         if let Err(err) = hash_js_module(source.to_path_buf(), hasher, bundle) {
-            tracing::error!("Failed to minify js. Falling back to non-minified: {err}");
+            tracing::error!(
+                "Failed to minify (hash) js at {source:?}. Falling back to non-minified: {err}"
+            );
             hash_file_contents(source, hasher)?;
         }
     } else {
